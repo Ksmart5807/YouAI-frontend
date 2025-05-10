@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat with Gemini</title>
+  <style>
+    #chat-container { max-width: 600px; margin: 20px auto; font-family: sans-serif; }
+    #chatLog {
+      border:1px solid #ccc;
+      border-radius:8px;
+      padding:10px;
+      height:300px;
+      overflow-y:auto;
+      background:#fafafa;
+    }
+    #chatInputWrapper { display:flex; margin-top:10px; }
+    #messageInput {
+      flex:1; padding:5px; border:1px solid #ccc; border-radius:4px;
+    }
+    #sendBtn {
+      margin-left:5px; padding:5px 10px; background:#007bff; color:white;
+      border:none; border-radius:4px; cursor:pointer;
+    }
+    #sendBtn:disabled { opacity:0.6; cursor:default; }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <div id="chatLog"><!-- Сообщения будут здесь --></div>
+    <div id="chatInputWrapper">
+      <input id="messageInput" type="text" placeholder="Напишите сообщение…" />
+      <button id="sendBtn">Отправить</button>
+    </div>
+  </div>
+
+  <script type="module">
+    console.log("Module script loaded");
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-functions.js";
+
+    // Конфигурация Firebase вашего проекта
+    const firebaseConfig = {
+      apiKey: "AIzaSyCrgh3zgKvqUjOuGj7D8Q5B_oxFbiU5hwo",
+      authDomain: "youai-tacjr.firebaseapp.com",
+      projectId: "youai-tacjr",
+      storageBucket: "youai-tacjr.firebasestorage.app",
+      messagingSenderId: "549169122456",
+      appId: "1:549169122456:web:526c001546141a4d8d14ed"
+    };
+
+    // Инициализируем Firebase и Functions
+    const app = initializeApp(firebaseConfig);
+    const functions = getFunctions(app);
+
+    // Callable-функция
+    const chatWithGemini = httpsCallable(functions, "chatWithGemini");
+
+    // Элементы страницы
+    const input = document.getElementById("messageInput");
+    const btn   = document.getElementById("sendBtn");
+    const log   = document.getElementById("chatLog");
+
+    // Обработчик клика
+    btn.addEventListener("click", async () => {
+      console.log("sendBtn clicked");
+      const text = input.value.trim();
+      if (!text) return;
+
+      log.innerHTML += `<p><strong>Вы:</strong> ${text}</p>`;
+      input.value = "";
+      btn.disabled = true;
+
+      try {
+        const { data } = await chatWithGemini({ text });
+        log.innerHTML += `<p><strong>Бот:</strong> ${data.reply}</p>`;
+      } catch (e) {
+        console.error(e);
+        log.innerHTML += `<p style="color:red;"><strong>Ошибка:</strong> ${e.message}</p>`;
+      } finally {
+        btn.disabled = false;
+        log.scrollTop = log.scrollHeight;
+      }
+    

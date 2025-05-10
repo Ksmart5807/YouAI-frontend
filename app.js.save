@@ -1,0 +1,39 @@
+// public/app.js
+// Инициализируем Firebase (если ещё не подключили)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-functions.js";
+
+// Ваши значения из Firebase Settings
+const firebaseConfig = {
+  apiKey: "ВАШ_API_KEY",
+  authDomain: "youai-tacjr.firebaseapp.com",
+  projectId: "youai-tacjr",
+  appId: "1:…:web:…"
+};
+
+const app = initializeApp(firebaseConfig);
+const functions = getFunctions(app);
+const chatWithGemini = httpsCallable(functions, "chatWithGemini");
+
+// Элементы страницы
+const input = document.getElementById("messageInput");
+const btn   = document.getElementById("sendBtn");
+const log   = document.getElementById("chatLog");
+
+btn.addEventListener("click", async () => {
+  const text = input.value.trim();
+  if (!text) return;
+  log.innerHTML += `<p><strong>Вы:</strong> ${text}</p>`;
+  input.value = "";
+  btn.disabled = true;
+  try {
+    const { data } = await chatWithGemini({ text });
+    log.innerHTML += `<p><strong>Бот:</strong> ${data.reply}</p>`;
+  } catch (e) {
+    log.innerHTML += `<p><strong>Ошибка:</strong> ${e.message}</p>`;
+  } finally {
+    btn.disabled = false;
+    log.scrollTop = log.scrollHeight;
+  }
+});
+

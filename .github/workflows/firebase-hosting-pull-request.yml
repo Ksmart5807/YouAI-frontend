@@ -1,25 +1,13 @@
-name: Deploy to preview channel
+name: Preview static files
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
 
 jobs:
-  build_and_preview:
+  preview:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
 
       - name: Deploy to Firebase Preview Channel
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -27,3 +15,4 @@ jobs:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_YOUAI_TACJR }}"
           channelId: pr-${{ github.event.number }}
+          projectId: youai-tacjr
